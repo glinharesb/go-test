@@ -4,21 +4,19 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"go-test/config"
 	"io/ioutil"
 	"log"
 	"math/big"
 )
 
 type Rsa struct {
-	pemFile    string
 	pemData    []byte
 	privateKey *rsa.PrivateKey
 	block      *pem.Block
 }
 
-var RsaInstance *Rsa = &Rsa{
-	pemFile: "key.pem",
-}
+var RsaInstance *Rsa = &Rsa{}
 
 func (r *Rsa) Load() {
 	r.loadPem()
@@ -27,7 +25,7 @@ func (r *Rsa) Load() {
 }
 
 func (r *Rsa) loadPem() {
-	pemData, err := ioutil.ReadFile(r.pemFile)
+	pemData, err := ioutil.ReadFile(config.ConfigInstance.PemFile)
 	if err != nil {
 		log.Fatalf("read key file: %s", err)
 	}

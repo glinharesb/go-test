@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-test/config"
 	"go-test/crypto"
+	"go-test/database"
 	"net"
 	"time"
 )
@@ -93,7 +94,7 @@ func (p *Packet) ParsePacket(packet []byte) {
 		fmt.Printf("[!] gpuVersion: %s\n", gpuVersion)
 	}
 
-	var accountToken string
+	var accountToken string = ""
 	if version >= 1072 {
 		decryptAuthPacket := Network{
 			Buffer: msg.GetBytes(128),
@@ -109,18 +110,51 @@ func (p *Packet) ParsePacket(packet []byte) {
 		}
 	}
 
+	p.ValidateVersion(version)
+
+	if accountName == "" {
+		p.DisconnectClient("Invalid account name.", version)
+	}
+
+	if password == "" {
+		p.DisconnectClient("Invalid password.", version)
+	}
+
+	var account database.Account
+	if !loginserverAuthentication(accountName, password, &account) {
+		p.DisconnectClient("Account name or password is not correct.", version)
+	}
+
+	p.GetCharacterList(account, accountToken, version)
+}
+
+func (p *Packet) ValidateVersion(version uint16) {
 	VERSION_MIN := uint16(config.ConfigInstance.VersionMin)
 	VERSION_MAX := uint16(config.ConfigInstance.VersionMax)
+
 	if (VERSION_MIN == VERSION_MAX) && (version != VERSION_MIN) {
-		p.DisconnectClient(fmt.Sprintf("Only clients with protocol %s allowed!", FormatVersion(VERSION_MIN)), version)
+		p.DisconnectClient(fmt.Sprintf("Only clients with protocol %s allowed!",
+			FormatVersion(VERSION_MIN)),
+			version)
 	} else if version < VERSION_MIN || version > VERSION_MAX {
 		p.DisconnectClient(fmt.Sprintf("Only clients with protocol between %s and %s allowed!",
 			FormatVersion(VERSION_MIN),
 			FormatVersion(VERSION_MAX)),
 			version)
 	}
+}
 
-	p.GetCharacterList(accountName, password, "", version)
+func loginserverAuthentication(accountName string, password string, account *database.Account) bool {
+	*account = database.DatabaseInstance.LoadAccountByName(accountName)
+	if account.Name == "" {
+		return false
+	}
+
+	if account.Password != password {
+		return false
+	}
+
+	return true
 }
 
 func (p *Packet) DisconnectClient(msg string, version uint16) {
@@ -153,7 +187,7 @@ func (p *Packet) SendPacket(outputMsg Network) {
 	p.Conn.Write(outputMsg.Buffer)
 }
 
-func (p *Packet) GetCharacterList(accountName string, password string, token string, version uint16) {
+func (p *Packet) GetCharacterList(account database.Account, token string, version uint16) {
 	outputMsg := Network{
 		Buffer: make([]byte, 8192),
 		Pos:    0,
@@ -161,18 +195,16 @@ func (p *Packet) GetCharacterList(accountName string, password string, token str
 	}
 	outputMsg.Pos = outputMsg.Header
 
-	motd := "Hello!"
-	characters := []string{"Account Manager"}
+	characters := database.DatabaseInstance.LoadCharactersById(account.Id)
 
 	// motd
 	outputMsg.AddU8(0x14)
-	outputMsg.AddString(fmt.Sprintf("1\n%s", motd))
+	outputMsg.AddString(fmt.Sprintf("1\n%s", config.ConfigInstance.Motd))
 
 	// session key
 	if version >= 1074 {
-		dateNow := time.Now().Unix()
 		outputMsg.AddU8(0x28)
-		outputMsg.AddString(fmt.Sprintf("%s\n%s\n%s\n%d", accountName, password, token, dateNow))
+		outputMsg.AddString(fmt.Sprintf("%s\n%s\n%s\n%d", account.Name, account.Password, token, time.Now().Unix()))
 	}
 
 	outputMsg.AddU8(0x64)
@@ -212,12 +244,18 @@ func (p *Packet) GetCharacterList(accountName string, password string, token str
 	}
 
 	// premium
-	if version >= 1077 {
+	if version > 1077 {
 		outputMsg.AddU8(0)
-		outputMsg.AddU8(0)
-		outputMsg.AddU32(0)
+
+		if account.Premdays > 0 {
+			outputMsg.AddU8(1)
+		} else {
+			outputMsg.AddU8(0)
+		}
+
+		outputMsg.AddU32(uint32(account.Premdays))
 	} else {
-		outputMsg.AddU16(0)
+		outputMsg.AddU16(uint16(account.Premdays))
 	}
 
 	p.SendPacket(outputMsg)

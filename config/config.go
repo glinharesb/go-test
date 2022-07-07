@@ -14,6 +14,13 @@ type Config struct {
 	VersionMax int    `yaml:"version_max"`
 	GameIp     string `yaml:"game_ip"`
 	GamePort   int    `yaml:"game_port"`
+	PemFile    string `yaml:"pem_file"`
+	Motd       string `yaml:"motd"`
+	DbHost     string `yaml:"db_host"`
+	DbUser     string `yaml:"db_user"`
+	DbPass     string `yaml:"db_pass"`
+	DbDatabase string `yaml:"db_database"`
+	DbPort     int    `yaml:"db_port"`
 }
 
 var ConfigInstance = &Config{}
