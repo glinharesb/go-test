@@ -1,0 +1,9 @@
+# Login Server
+login_ip: "127.0.0.1"
+login_port: 7174
+version_min: 860
+version_max: 1098
+
+# Game Server
+game_ip: "127.0.0.1"
+game_port: 7172

@@ -15,6 +15,11 @@ func (n *Network) AddU16(value uint16) {
 	n.Pos += 2
 }
 
+func (n *Network) AddU32(value uint32) {
+	binary.LittleEndian.PutUint32(n.Buffer[n.Pos:], value)
+	n.Pos += 4
+}
+
 func (n *Network) AddString(str string) {
 	// string length
 	n.AddU16(uint16(len(str)))

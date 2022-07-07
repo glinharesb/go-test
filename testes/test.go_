@@ -24,12 +24,9 @@ func main() {
 	fmt.Println("[!] Encrypted by func: ")
 	fmt.Println(hex.Dump(buffer[:50]))
 
-	bufferOriginal, err2 := ioutil.ReadFile("buffer_depois")
-	if err2 != nil {
-		log.Fatal(err2)
-	}
-	fmt.Println("[!] Encrypted Original: ")
-	fmt.Println(hex.Dump(bufferOriginal[:50]))
+	xteaDecrypt(&buffer, key)
+	fmt.Println("[!] Decrypted by func: ")
+	fmt.Println(hex.Dump(buffer[:50]))
 }
 
 func xteaEncrypt(buffer *[]byte, key [4]uint32) {
@@ -43,10 +40,26 @@ func xteaEncrypt(buffer *[]byte, key [4]uint32) {
 
 		for j := 0; j < num_rounds; j++ {
 			u32[i] += (((u32[i+1] << 4) ^ (u32[i+1] >> 5)) + u32[i+1]) ^ (u32[0] + key[u32[0]&3])
-
 			u32[0] += delta
-
 			u32[i+1] += (((u32[i] << 4) ^ (u32[i] >> 5)) + u32[i]) ^ (u32[0] + key[(u32[0]>>11)&3])
+		}
+	}
+}
+
+// FIX
+func xteaDecrypt(buffer *[]byte, key [4]uint32) {
+	const delta = 0x9e3779b9
+	const num_rounds = 32
+
+	var u32 []uint32 = (*(*[]uint32)(unsafe.Pointer(buffer)))
+
+	for i := 2; i < len(u32)/4; i += 2 {
+		u32[0] = 0xC6EF3720
+
+		for j := 0; j < num_rounds; j++ {
+			u32[i+1] -= (((u32[i] << 4) ^ (u32[i] >> 5)) + u32[i]) ^ (u32[0] + key[(u32[0]>>11)&3])
+			u32[0] -= delta
+			u32[i] -= (((u32[i+1] << 4) ^ (u32[i+1] >> 5)) + u32[i+1]) ^ (u32[0] + key[u32[0]&3])
 		}
 	}
 }
