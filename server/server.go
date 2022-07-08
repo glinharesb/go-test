@@ -33,6 +33,7 @@ func (s *Server) Listen() {
 }
 
 func (s *Server) Handle(conn net.Conn) {
+	// t1 := time.Now()
 	defer conn.Close()
 
 	packet := make([]byte, 1024)
@@ -47,4 +48,6 @@ func (s *Server) Handle(conn net.Conn) {
 		Conn: conn,
 	}
 	packetInstance.ParsePacket(packet)
+
+	// fmt.Printf("-> Tempo gasto: %dms\n", time.Since(t1).Milliseconds())
 }

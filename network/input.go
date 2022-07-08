@@ -9,7 +9,7 @@ func (n *Network) GetBytes(count int) []byte {
 }
 
 func (n *Network) GetU8() byte {
-	result := n.Buffer[0]
+	result := n.Buffer[n.Pos]
 	n.Pos += 1
 	return result
 }
@@ -23,6 +23,11 @@ func (n *Network) GetU16() uint16 {
 func (n *Network) GetU32() uint32 {
 	result := binary.LittleEndian.Uint32(n.Buffer[n.Pos:])
 	n.Pos += 4
+	return result
+}
+
+func (n *Network) PeekU32() uint32 {
+	result := binary.LittleEndian.Uint32(n.Buffer[n.Pos:])
 	return result
 }
 

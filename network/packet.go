@@ -10,8 +10,9 @@ import (
 )
 
 type Packet struct {
-	Conn    net.Conn
-	XteaKey [4]uint32
+	Conn        net.Conn
+	XteaKey     [4]uint32
+	HasChecksum bool
 }
 
 func (p *Packet) ParsePacket(packet []byte) {
@@ -20,45 +21,46 @@ func (p *Packet) ParsePacket(packet []byte) {
 		Pos:    0,
 	}
 
-	packetSize := msg.GetU16()
-	fmt.Printf("[!] packetSize: %d\n", packetSize)
+	msg.GetU16() // packet size
 
-	// FIX
-	checksum := msg.GetU32()
-	fmt.Printf("[!] checksum: %d\n", checksum)
-
-	// FIX
-	adler := crypto.Adler32(msg.Buffer, msg.Pos, len(msg.Buffer)-msg.Pos)
-	fmt.Printf("[!] adler: %d\n", adler)
+	checksum := msg.PeekU32()
+	if checksum == crypto.Adler32(msg.Buffer, msg.Pos+4, len(msg.Buffer)-msg.Pos-4) {
+		msg.GetU32() // read checksum
+		p.HasChecksum = true
+	}
 
 	packetType := msg.GetU8()
-	fmt.Printf("[!] packetType: %d\n", packetType)
+	// status check
+	if packetType == 0xFF {
+		return
+	}
 
-	msg.GetU16()
+	if packetType != 0x01 {
+		fmt.Printf("Invalid packet type: %d, should be 1\n", packetType)
+		return
+	}
+
+	msg.GetU16() // os
 
 	version := msg.GetU16()
 	fmt.Printf("[!] version: %d\n", version)
 
 	if version >= 980 {
-		msg.GetU32()
+		msg.GetU32() // read version
 	}
 
 	if version >= 1071 {
-		msg.GetU16()
-		msg.GetU16()
+		msg.GetU16() // content revision
+		msg.GetU16() // unkown
 	} else {
-		msg.GetU32()
+		msg.GetU32() // data signature
 	}
 
-	sprSignature := msg.GetU32()
-	fmt.Printf("[!] sprSignature: %d\n", sprSignature)
-
-	picSignature := msg.GetU32()
-	fmt.Printf("[!] picSignature: %d\n", picSignature)
+	msg.GetU32() // spr signature
+	msg.GetU32() // pic signature
 
 	if version >= 980 {
-		previewState := msg.GetU8()
-		fmt.Printf("[!] previewState: %d\n", previewState)
+		msg.GetU8() // preview state
 	}
 
 	var decryptedMsg Network
@@ -67,20 +69,26 @@ func (p *Packet) ParsePacket(packet []byte) {
 			Buffer: msg.GetBytes(128),
 			Pos:    0,
 		}
+
+		// RSA decrypt
 		decryptedMsg.Buffer = crypto.RsaInstance.Decrypt(decryptedMsg.Buffer)
 
+		// XTEA keys
 		p.XteaKey[0] = decryptedMsg.GetU32()
 		p.XteaKey[1] = decryptedMsg.GetU32()
 		p.XteaKey[2] = decryptedMsg.GetU32()
 		p.XteaKey[3] = decryptedMsg.GetU32()
 	}
 
-	fmt.Printf("[!] Xtea: %v\n", p.XteaKey)
-
-	accountName := decryptedMsg.GetString()
-	fmt.Printf("[!] accountName: %s\n", accountName)
+	var accountName string
+	if version >= 840 {
+		accountName = decryptedMsg.GetString()
+	} else {
+		accountName = fmt.Sprint(decryptedMsg.GetU32())
+	}
 
 	password := decryptedMsg.GetString()
+	fmt.Printf("[!] accountName: %s\n", accountName)
 	fmt.Printf("[!] password: %s\n", password)
 
 	if version >= 1061 {
@@ -94,12 +102,14 @@ func (p *Packet) ParsePacket(packet []byte) {
 		fmt.Printf("[!] gpuVersion: %s\n", gpuVersion)
 	}
 
-	var accountToken string = ""
+	accountToken := ""
 	if version >= 1072 {
 		decryptAuthPacket := Network{
 			Buffer: msg.GetBytes(128),
 			Pos:    0,
 		}
+
+		// RSA decrypt
 		decryptAuthPacket.Buffer = crypto.RsaInstance.Decrypt(decryptAuthPacket.Buffer)
 
 		accountToken = decryptAuthPacket.GetString()
@@ -112,7 +122,7 @@ func (p *Packet) ParsePacket(packet []byte) {
 
 	p.ValidateVersion(version)
 
-	if accountName == "" {
+	if accountName == "" || accountName == "0" {
 		p.DisconnectClient("Invalid account name.", version)
 	}
 
@@ -177,9 +187,13 @@ func (p *Packet) DisconnectClient(msg string, version uint16) {
 }
 
 func (p *Packet) SendPacket(outputMsg Network) {
-	outputMsg.XteaEncrypt(p.XteaKey)
+	if p.XteaKey[0] != 0 {
+		outputMsg.XteaEncrypt(p.XteaKey)
+	}
 
-	outputMsg.AddChecksum()
+	if p.HasChecksum {
+		outputMsg.AddChecksum()
+	}
 
 	outputMsg.AddSize()
 

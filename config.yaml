@@ -3,7 +3,7 @@ login_ip: "127.0.0.1"
 login_port: 7174
 
 # Client version allowed
-version_min: 860
+version_min: 800
 version_max: 1098
 
 # Game server
