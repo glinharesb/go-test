@@ -5,6 +5,7 @@ import (
 	"go-test/config"
 	"go-test/crypto"
 	"go-test/database"
+	"go-test/helpers"
 	"net"
 	"time"
 )
@@ -142,29 +143,29 @@ func (p *Packet) ValidateVersion(version uint16) {
 
 	if (VERSION_MIN == VERSION_MAX) && (version != VERSION_MIN) {
 		p.DisconnectClient(fmt.Sprintf("Only clients with protocol %s allowed!",
-			FormatVersion(VERSION_MIN)),
+			helpers.FormatVersion(VERSION_MIN)),
 			version)
 	} else if version < VERSION_MIN || version > VERSION_MAX {
 		p.DisconnectClient(fmt.Sprintf("Only clients with protocol between %s and %s allowed!",
-			FormatVersion(VERSION_MIN),
-			FormatVersion(VERSION_MAX)),
+			helpers.FormatVersion(VERSION_MIN),
+			helpers.FormatVersion(VERSION_MAX)),
 			version)
 	}
 }
 
 func loginserverAuthentication(accountName string, password string, account *database.Account) bool {
 	*account = database.DatabaseInstance.LoadAccountByName(accountName)
-	if account.Name == "" {
+	if len(account.Name) == 0 {
 		return false
 	}
 
 	switch config.ConfigInstance.EncryptionType {
 	case "sha1":
-		TransformToSha1(&password)
+		helpers.TransformToSha1(&password)
 	case "sha256":
-		TransformToSha256(&password)
+		helpers.TransformToSha256(&password)
 	case "sha512":
-		TransformToSha512(&password)
+		helpers.TransformToSha512(&password)
 	}
 
 	return account.Password == password
@@ -251,10 +252,10 @@ func (p *Packet) GetCharacterList(account database.Account, token string, versio
 		outputMsg.AddU8(byte(len(characters))) // characters quantity
 
 		for _, character := range characters {
-			outputMsg.AddString(character)                           // character name
-			outputMsg.AddString(config.ConfigInstance.ServerName)    // server name, online/offline status or world name
-			outputMsg.AddU32(Ip2int(config.ConfigInstance.GameIp))   // server ip
-			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort)) // server port
+			outputMsg.AddString(character)                                 // character name
+			outputMsg.AddString(config.ConfigInstance.ServerName)          // server name, online/offline status or world name
+			outputMsg.AddU32(helpers.Ip2int(config.ConfigInstance.GameIp)) // server ip
+			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort))       // server port
 
 			if version >= 980 {
 				outputMsg.AddU8(0) // world preview
