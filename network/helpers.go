@@ -1,6 +1,9 @@
 package network
 
 import (
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -24,4 +27,19 @@ func FormatVersion(version uint16) string {
 	length := len(toString) - 2
 
 	return fmt.Sprintf("%s.%s", toString[:length], toString[length:])
+}
+
+func TransformToSha1(password *string) {
+	hash := sha1.Sum([]byte(*password))
+	*password = fmt.Sprintf("%x", hash)
+}
+
+func TransformToSha256(password *string) {
+	hash := sha256.Sum256([]byte(*password))
+	*password = fmt.Sprintf("%x", hash)
+}
+
+func TransformToSha512(password *string) {
+	hash := sha512.Sum512([]byte(*password))
+	*password = fmt.Sprintf("%x", hash)
 }

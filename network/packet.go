@@ -78,6 +78,8 @@ func (p *Packet) ParsePacket(packet []byte) {
 		p.XteaKey[1] = decryptedMsg.GetU32()
 		p.XteaKey[2] = decryptedMsg.GetU32()
 		p.XteaKey[3] = decryptedMsg.GetU32()
+	} else {
+		decryptedMsg = msg
 	}
 
 	var accountName string
@@ -92,14 +94,10 @@ func (p *Packet) ParsePacket(packet []byte) {
 	fmt.Printf("[!] password: %s\n", password)
 
 	if version >= 1061 {
-		msg.GetU8()
-		msg.GetU8()
-
-		gpu := msg.GetString()
-		fmt.Printf("[!] gpu: %s\n", gpu)
-
-		gpuVersion := msg.GetString()
-		fmt.Printf("[!] gpuVersion: %s\n", gpuVersion)
+		msg.GetU8()     // ogl info 1
+		msg.GetU8()     // ogl info 2
+		msg.GetString() // GPU
+		msg.GetString() // GPU version
 	}
 
 	accountToken := ""
@@ -116,17 +114,17 @@ func (p *Packet) ParsePacket(packet []byte) {
 		fmt.Printf("[!] accountToken: %s\n", accountToken)
 
 		if version >= 1074 {
-			decryptAuthPacket.GetU8()
+			decryptAuthPacket.GetU8() // stay logged > 0
 		}
 	}
 
 	p.ValidateVersion(version)
 
-	if accountName == "" || accountName == "0" {
+	if len(accountName) == 0 || accountName == "0" {
 		p.DisconnectClient("Invalid account name.", version)
 	}
 
-	if password == "" {
+	if len(password) == 0 {
 		p.DisconnectClient("Invalid password.", version)
 	}
 
@@ -160,11 +158,16 @@ func loginserverAuthentication(accountName string, password string, account *dat
 		return false
 	}
 
-	if account.Password != password {
-		return false
+	switch config.ConfigInstance.EncryptionType {
+	case "sha1":
+		TransformToSha1(&password)
+	case "sha256":
+		TransformToSha256(&password)
+	case "sha512":
+		TransformToSha512(&password)
 	}
 
-	return true
+	return account.Password == password
 }
 
 func (p *Packet) DisconnectClient(msg string, version uint16) {
@@ -212,8 +215,10 @@ func (p *Packet) GetCharacterList(account database.Account, token string, versio
 	characters := database.DatabaseInstance.LoadCharactersById(account.Id)
 
 	// motd
-	outputMsg.AddU8(0x14)
-	outputMsg.AddString(fmt.Sprintf("1\n%s", config.ConfigInstance.Motd))
+	if len(config.ConfigInstance.Motd) > 0 {
+		outputMsg.AddU8(0x14)
+		outputMsg.AddString(fmt.Sprintf("1\n%s", config.ConfigInstance.Motd))
+	}
 
 	// session key
 	if version >= 1074 {
@@ -221,55 +226,57 @@ func (p *Packet) GetCharacterList(account database.Account, token string, versio
 		outputMsg.AddString(fmt.Sprintf("%s\n%s\n%s\n%d", account.Name, account.Password, token, time.Now().Unix()))
 	}
 
+	// character list
 	outputMsg.AddU8(0x64)
 
 	if version >= 1010 {
-		numberOfWorlds := 2
-		outputMsg.AddU8(byte(numberOfWorlds))
+		worldsLength := 2
+		outputMsg.AddU8(byte(worldsLength)) // worlds quantity
 
-		for i := 0; i < numberOfWorlds; i++ {
-			outputMsg.AddU8(byte(i))
-			outputMsg.AddString("Offline")
-			outputMsg.AddString(config.ConfigInstance.GameIp)
-			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort))
-			outputMsg.AddU8(0)
+		for i := 0; i < worldsLength; i++ {
+			outputMsg.AddU8(byte(i))                                 // world id
+			outputMsg.AddString(config.ConfigInstance.ServerName)    // server name, online/offline status or world name
+			outputMsg.AddString(config.ConfigInstance.GameIp)        // server ip
+			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort)) // server port
+			outputMsg.AddU8(0)                                       // world preview
 		}
 
-		outputMsg.AddU8(byte(len(characters)))
+		outputMsg.AddU8(byte(len(characters))) // characters quantity
 
 		for _, character := range characters {
-			outputMsg.AddU8(0)
-			outputMsg.AddString(character)
+			outputMsg.AddU8(0)             // world id
+			outputMsg.AddString(character) // character name
 		}
 	} else {
-		outputMsg.AddU8(byte(len(characters)))
+		outputMsg.AddU8(byte(len(characters))) // characters quantity
 
 		for _, character := range characters {
-			outputMsg.AddString(character)
-
-			outputMsg.AddString("Teste")
-			outputMsg.AddU32(Ip2int(config.ConfigInstance.GameIp))
-			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort))
+			outputMsg.AddString(character)                           // character name
+			outputMsg.AddString(config.ConfigInstance.ServerName)    // server name, online/offline status or world name
+			outputMsg.AddU32(Ip2int(config.ConfigInstance.GameIp))   // server ip
+			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort)) // server port
 
 			if version >= 980 {
-				outputMsg.AddU8(0)
+				outputMsg.AddU8(0) // world preview
 			}
 		}
 	}
 
 	// premium
 	if version > 1077 {
+		// account status: 0 - ok, 1 - frozen, 2 - suspended
 		outputMsg.AddU8(0)
 
+		// premium status
 		if account.Premdays > 0 {
-			outputMsg.AddU8(1)
+			outputMsg.AddU8(1) // premium
 		} else {
-			outputMsg.AddU8(0)
+			outputMsg.AddU8(0) // free
 		}
 
-		outputMsg.AddU32(uint32(account.Premdays))
+		outputMsg.AddU32(uint32(account.Premdays)) // timestamp
 	} else {
-		outputMsg.AddU16(uint16(account.Premdays))
+		outputMsg.AddU16(uint16(account.Premdays)) // days
 	}
 
 	p.SendPacket(outputMsg)

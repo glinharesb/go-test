@@ -3,18 +3,19 @@ login_ip: "127.0.0.1"
 login_port: 7174
 
 # Client version allowed
-version_min: 800
+version_min: 700
 version_max: 1098
 
 # Game server
 game_ip: "127.0.0.1"
 game_port: 7172
+server_name: "Forgotten Server"
 
 # Pem file name
 pem_file: "key.pem"
 
 # Message of the day
-motd: "Hello :)"
+motd: "Hello :)" # empty = ""
 
 # Database
 db_host: "127.0.0.1"
@@ -22,3 +23,4 @@ db_user: "root"
 db_pass: "linhares123"
 db_database: "forgottenserver04"
 db_port: 3307
+encryption_type: "plain" # plain, sha1, sha256 and sha512
