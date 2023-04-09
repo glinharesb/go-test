@@ -1,29 +1,17 @@
 package crypto
 
+import (
+	"hash/adler32"
+)
+
+// CalculateAdler32Checksum
 func Adler32(buffer []byte, offset int, size int) uint32 {
-	const adler = 65521
-	d := [2]uint32{1, 0}
+	// create a new Adler-32 hash
+	h := adler32.New()
 
-	p := offset
-	for size > 0 {
-		var tlen int
-		if tlen > 5552 {
-			tlen = 5552
-		} else {
-			tlen = size
-		}
-		size -= tlen
+	// write the buffer to the hash from the specified offset and size
+	h.Write(buffer[offset : offset+size])
 
-		for tlen > 0 {
-			d[0] += uint32(buffer[p])
-			d[1] += d[0]
-			tlen--
-			p++
-		}
-
-		d[0] %= adler
-		d[1] %= adler
-	}
-
-	return (d[1] << 16) | d[0]
+	// return the hash value as a uint32
+	return h.Sum32()
 }

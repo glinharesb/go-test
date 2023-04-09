@@ -20,7 +20,7 @@ func (s *Server) Listen() {
 	}
 	defer listener.Close()
 
-	fmt.Printf("[!] Login server listening on: %s\n", address)
+	log.Printf("> Login server listening on: %s\n", address)
 
 	for {
 		conn, err := listener.Accept()
@@ -32,22 +32,28 @@ func (s *Server) Listen() {
 	}
 }
 
+// Handle handles incoming connections and parses packets.
 func (s *Server) Handle(conn net.Conn) {
-	// t1 := time.Now()
 	defer conn.Close()
 
-	packet := make([]byte, 1024)
+	// Log new connection and remote IP address.
+	log.Printf("> New connection from IP %s", conn.RemoteAddr().String())
 
+	// Read packet from connection.
+	packet := make([]byte, 1024)
 	length, err := conn.Read(packet)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error reading packet: %v", err)
+		return
 	}
 	packet = packet[:length]
 
-	packetInstance := network.Packet{
+	// Create new packet instance and parse packet.
+	p := network.Packet{
 		Conn: conn,
 	}
-	packetInstance.ParsePacket(packet)
-
-	// fmt.Printf("-> Tempo gasto: %dms\n", time.Since(t1).Milliseconds())
+	if err := p.ParsePacket(packet); err != nil {
+		log.Printf("Error parsing packet: %v", err)
+		return
+	}
 }

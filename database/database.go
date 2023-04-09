@@ -15,7 +15,7 @@ type Database struct {
 
 var DatabaseInstance = &Database{}
 
-func (d *Database) Load() bool {
+func (d *Database) Connect() error {
 	dataSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
 		config.ConfigInstance.DbUser,
 		config.ConfigInstance.DbPass,
@@ -25,12 +25,16 @@ func (d *Database) Load() bool {
 
 	db, err := sql.Open("mysql", dataSource)
 	if err != nil {
-		log.Fatal(err)
-		return false
+		return err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return err
 	}
 
 	d.Connection = db
-	return true
+	return nil
 }
 
 func (d *Database) Version() string {

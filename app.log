@@ -1,0 +1,111 @@
+2023/04/09 08:53:39 > New connection from IP 127.0.0.1:49634
+2023/04/09 08:53:39 >> Version: 740
+2023/04/09 08:53:39 >> Account name: 4050344
+2023/04/09 08:53:39 >> Password: linhares
+2023/04/09 08:55:15 > New connection from IP 127.0.0.1:49658
+2023/04/09 08:55:15 >> Version: 860
+2023/04/09 08:55:15 >> Account name: 4050344
+2023/04/09 08:55:15 >> Password: linhares
+2023/04/09 08:55:52 > Login server listening on: 127.0.0.1:7174
+2023/04/09 08:56:24 > New connection from IP 127.0.0.1:49679
+2023/04/09 08:56:24 >> Version: 740
+2023/04/09 08:56:24 >> Account name: 4050344
+2023/04/09 08:56:24 >> Password: linhares
+2023/04/09 08:57:56 > New connection from IP 127.0.0.1:49706
+2023/04/09 08:57:56 >> Version: 860
+2023/04/09 08:57:56 >> Account name: 4050344
+2023/04/09 08:57:56 >> Password: linhares
+2023/04/09 08:58:51 > New connection from IP 127.0.0.1:49719
+2023/04/09 08:58:51 >> Version: 1098
+2023/04/09 08:58:51 >> Account name: 4050344
+2023/04/09 08:58:51 >> Password: linhares
+2023/04/09 08:58:51 >> Token: 
+2023/04/09 09:01:25 > New connection from IP 127.0.0.1:49757
+2023/04/09 09:01:25 >> Version: 740
+2023/04/09 09:01:25 >> Account name: 4050344
+2023/04/09 09:01:25 >> Password: linhares
+2023/04/09 09:03:26 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:03:30 > New connection from IP 127.0.0.1:49808
+2023/04/09 09:03:30 >> Version: 740
+2023/04/09 09:03:30 >> Account name: 4050344
+2023/04/09 09:03:30 >> Password: linhares
+2023/04/09 09:03:43 > New connection from IP 127.0.0.1:49812
+2023/04/09 09:03:43 >> Version: 860
+2023/04/09 09:03:43 >> Account name: 4050344
+2023/04/09 09:03:43 >> Password: linhares
+2023/04/09 09:03:56 > New connection from IP 127.0.0.1:49818
+2023/04/09 09:03:56 >> Version: 740
+2023/04/09 09:03:56 >> Account name: 4050344
+2023/04/09 09:03:56 >> Password: linhares
+2023/04/09 09:04:59 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:05:01 > New connection from IP 127.0.0.1:49837
+2023/04/09 09:05:01 >> Version: 740
+2023/04/09 09:05:01 >> Account name: 4050344
+2023/04/09 09:05:01 >> Password: linhares
+2023/04/09 09:05:02 > New connection from IP 127.0.0.1:49838
+2023/04/09 09:05:02 Error parsing packet: invalid packet type: 10, should be 1
+2023/04/09 09:05:04 > New connection from IP 127.0.0.1:49840
+2023/04/09 09:05:04 Error parsing packet: invalid packet type: 10, should be 1
+2023/04/09 09:06:17 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:07:55 > New connection from IP 127.0.0.1:49887
+2023/04/09 09:07:55 >> Version: 740
+2023/04/09 09:07:55 >> Account name: 4050344
+2023/04/09 09:07:55 >> Password: linhares
+2023/04/09 09:08:55 > New connection from IP 127.0.0.1:49907
+2023/04/09 09:08:55 >> Version: 740
+2023/04/09 09:08:55 >> Account name: 4050344
+2023/04/09 09:08:55 >> Password: linhares
+2023/04/09 09:17:08 > New connection from IP 127.0.0.1:50051
+2023/04/09 09:17:08 >> Version: 740
+2023/04/09 09:17:08 >> Account name: 4050344
+2023/04/09 09:17:08 >> Password: linhares
+2023/04/09 09:17:20 > New connection from IP 127.0.0.1:50059
+2023/04/09 09:17:20 >> Version: 740
+2023/04/09 09:17:20 >> Account name: 4050344
+2023/04/09 09:17:20 >> Password: linhares
+2023/04/09 09:19:16 > New connection from IP 127.0.0.1:50087
+2023/04/09 09:19:16 >> Version: 860
+2023/04/09 09:19:16 >> Account name: 4050344
+2023/04/09 09:19:16 >> Password: linhares
+2023/04/09 09:25:29 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:25:39 > New connection from IP 127.0.0.1:50206
+2023/04/09 09:25:39 >> Version: 860
+2023/04/09 09:25:39 >> Account name: 4050344
+2023/04/09 09:25:39 >> Password: linhares
+2023/04/09 09:26:23 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:26:25 > New connection from IP 127.0.0.1:50225
+2023/04/09 09:26:25 >> Version: 860
+2023/04/09 09:26:25 >> Account name: 4050344
+2023/04/09 09:26:25 >> Password: linhares
+2023/04/09 09:27:03 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:27:10 > New connection from IP 127.0.0.1:50256
+2023/04/09 09:27:10 >> Version: 860
+2023/04/09 09:27:10 >> Account name: 4050344
+2023/04/09 09:27:10 >> Password: linhares
+2023/04/09 09:27:16 > New connection from IP 127.0.0.1:50260
+2023/04/09 09:27:16 >> Version: 860
+2023/04/09 09:27:16 >> Account name: 4050344
+2023/04/09 09:27:16 >> Password: linhares
+2023/04/09 09:27:31 > New connection from IP 127.0.0.1:50271
+2023/04/09 09:27:31 >> Version: 860
+2023/04/09 09:27:31 >> Account name: 4050344
+2023/04/09 09:27:31 >> Password: linhares
+2023/04/09 09:28:19 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:28:24 > New connection from IP 127.0.0.1:50287
+2023/04/09 09:28:24 >> Version: 860
+2023/04/09 09:28:24 >> Account name: 4050344
+2023/04/09 09:28:24 >> Password: linhares
+2023/04/09 09:28:52 > New connection from IP 127.0.0.1:50300
+2023/04/09 09:28:52 >> Version: 860
+2023/04/09 09:28:52 >> Account name: 4050344
+2023/04/09 09:28:52 >> Password: linhares
+2023/04/09 09:29:01 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:29:05 > New connection from IP 127.0.0.1:50307
+2023/04/09 09:29:05 >> Version: 860
+2023/04/09 09:29:05 >> Account name: 4050344
+2023/04/09 09:29:05 >> Password: linhares
+2023/04/09 09:31:23 > Login server listening on: 127.0.0.1:7174
+2023/04/09 09:31:24 > New connection from IP 127.0.0.1:50363
+2023/04/09 09:31:24 >> Version: 860
+2023/04/09 09:31:24 >> Account name: 4050344
+2023/04/09 09:31:24 >> Password: linhares

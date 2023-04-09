@@ -6,6 +6,7 @@ import (
 	"go-test/crypto"
 	"go-test/database"
 	"go-test/helpers"
+	"log"
 	"net"
 	"time"
 )
@@ -16,7 +17,7 @@ type Packet struct {
 	HasChecksum bool
 }
 
-func (p *Packet) ParsePacket(packet []byte) {
+func (p *Packet) ParsePacket(packet []byte) error {
 	msg := Network{
 		Buffer: packet,
 		Pos:    0,
@@ -33,18 +34,17 @@ func (p *Packet) ParsePacket(packet []byte) {
 	packetType := msg.GetU8()
 	// status check
 	if packetType == 0xFF {
-		return
+		return nil
 	}
 
 	if packetType != 0x01 {
-		fmt.Printf("Invalid packet type: %d, should be 1\n", packetType)
-		return
+		return fmt.Errorf("invalid packet type: %d, should be 1", packetType)
 	}
 
 	msg.GetU16() // os
 
 	version := msg.GetU16()
-	fmt.Printf("[!] version: %d\n", version)
+	log.Printf(">> Version: %d\n", version)
 
 	if version >= 980 {
 		msg.GetU32() // read version
@@ -91,8 +91,8 @@ func (p *Packet) ParsePacket(packet []byte) {
 	}
 
 	password := decryptedMsg.GetString()
-	fmt.Printf("[!] accountName: %s\n", accountName)
-	fmt.Printf("[!] password: %s\n", password)
+	log.Printf(">> Account name: %s\n", accountName)
+	log.Printf(">> Password: %s\n", password)
 
 	if version >= 1061 {
 		msg.GetU8()     // ogl info 1
@@ -112,7 +112,7 @@ func (p *Packet) ParsePacket(packet []byte) {
 		decryptAuthPacket.Buffer = crypto.RsaInstance.Decrypt(decryptAuthPacket.Buffer)
 
 		accountToken = decryptAuthPacket.GetString()
-		fmt.Printf("[!] accountToken: %s\n", accountToken)
+		log.Printf(">> Token: %s\n", accountToken)
 
 		if version >= 1074 {
 			decryptAuthPacket.GetU8() // stay logged > 0
@@ -135,6 +135,8 @@ func (p *Packet) ParsePacket(packet []byte) {
 	}
 
 	p.GetCharacterList(account, accountToken, version)
+
+	return nil
 }
 
 func (p *Packet) ValidateVersion(version uint16) {
@@ -154,7 +156,7 @@ func (p *Packet) ValidateVersion(version uint16) {
 }
 
 func loginserverAuthentication(accountName string, password string, account *database.Account) bool {
-	*account = database.DatabaseInstance.LoadAccountByName(accountName)
+	*account, _ = database.DatabaseInstance.LoadAccountByName(accountName)
 	if len(account.Name) == 0 {
 		return false
 	}
@@ -213,7 +215,7 @@ func (p *Packet) GetCharacterList(account database.Account, token string, versio
 	}
 	outputMsg.Pos = outputMsg.Header
 
-	characters := database.DatabaseInstance.LoadCharactersById(account.Id)
+	characters, _ := database.DatabaseInstance.LoadCharactersById(account.Id)
 
 	// motd
 	if len(config.ConfigInstance.Motd) > 0 {
