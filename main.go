@@ -18,7 +18,7 @@ func main() {
 	defer file.Close()
 
 	// Set the log output to the file
-	log.SetOutput(file)
+	// log.SetOutput(file)
 
 	config.ConfigInstance.Load()
 

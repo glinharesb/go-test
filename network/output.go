@@ -35,6 +35,6 @@ func (n *Network) AddSize() {
 }
 
 func (n *Network) AddChecksum() {
-	binary.LittleEndian.PutUint32(n.Buffer[n.Header-4:], crypto.Adler32(n.Buffer, n.Header, n.Pos-n.Header))
+	binary.LittleEndian.PutUint32(n.Buffer[n.Header-4:], crypto.CalculateAdler32Checksum(n.Buffer, n.Header, n.Pos-n.Header))
 	n.Header -= 4
 }

@@ -32,14 +32,16 @@ func (s *Server) Listen() {
 	}
 }
 
-// Handle handles incoming connections and parses packets.
+// handle handles incoming connections and parses packets
 func (s *Server) Handle(conn net.Conn) {
 	defer conn.Close()
 
-	// Log new connection and remote IP address.
+	fmt.Println("")
+
+	// log new connection and remote IP address
 	log.Printf("> New connection from IP %s", conn.RemoteAddr().String())
 
-	// Read packet from connection.
+	// read packet from connection
 	packet := make([]byte, 1024)
 	length, err := conn.Read(packet)
 	if err != nil {
@@ -48,7 +50,7 @@ func (s *Server) Handle(conn net.Conn) {
 	}
 	packet = packet[:length]
 
-	// Create new packet instance and parse packet.
+	// create new packet instance and parse packet
 	p := network.Packet{
 		Conn: conn,
 	}

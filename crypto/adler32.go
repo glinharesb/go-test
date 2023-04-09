@@ -4,8 +4,7 @@ import (
 	"hash/adler32"
 )
 
-// CalculateAdler32Checksum
-func Adler32(buffer []byte, offset int, size int) uint32 {
+func CalculateAdler32Checksum(buffer []byte, offset int, size int) uint32 {
 	// create a new Adler-32 hash
 	h := adler32.New()
 

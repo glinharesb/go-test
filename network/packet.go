@@ -26,7 +26,7 @@ func (p *Packet) ParsePacket(packet []byte) error {
 	msg.GetU16() // packet size
 
 	checksum := msg.PeekU32()
-	if checksum == crypto.Adler32(msg.Buffer, msg.Pos+4, len(msg.Buffer)-msg.Pos-4) {
+	if checksum == crypto.CalculateAdler32Checksum(msg.Buffer, msg.Pos+4, len(msg.Buffer)-msg.Pos-4) {
 		msg.GetU32() // read checksum
 		p.HasChecksum = true
 	}
