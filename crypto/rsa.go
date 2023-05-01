@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"go-test/config"
 	"io/ioutil"
 	"log"
@@ -14,39 +15,55 @@ var pemData []byte
 var privateKey *rsa.PrivateKey
 var block *pem.Block
 
-func LoadRsa() {
-	loadPem()
-	extractDataBlock()
-	decodeRsa()
+func LoadRsa() error {
+	if err := loadPem(); err != nil {
+		return err
+	}
+
+	if err := extractDataBlock(); err != nil {
+		return err
+	}
+
+	if err := decodeRsa(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func loadPem() {
+func loadPem() error {
 	var err error
 
 	pemData, err = ioutil.ReadFile(config.GetConfig().PemFile)
 	if err != nil {
-		log.Fatalf("read key file: %s", err)
+		return fmt.Errorf("read key file: %s", err)
 	}
+
+	return nil
 }
 
-func extractDataBlock() {
+func extractDataBlock() error {
 	block, _ = pem.Decode(pemData)
 	if block == nil {
-		log.Fatalf("bad key data: %s", "not PEM-encoded")
+		return fmt.Errorf("bad key data: %s", "not PEM-encoded")
 	}
 
 	if got, want := block.Type, "RSA PRIVATE KEY"; got != want {
-		log.Fatalf("unknown key type %q, want %q", got, want)
+		return fmt.Errorf("unknown key type %q, want %q", got, want)
 	}
+
+	return nil
 }
 
-func decodeRsa() {
+func decodeRsa() error {
 	var err error
 
 	privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		log.Fatalf("bad private key: %s", err)
+		return fmt.Errorf("bad private key: %s", err)
 	}
+
+	return nil
 }
 
 func Decrypt(encryptedBytes []byte) []byte {

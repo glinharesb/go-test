@@ -2,7 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"log"
 
 	"gopkg.in/yaml.v3"
 )
@@ -27,16 +26,18 @@ type Config struct {
 
 var config = &Config{}
 
-func Load() {
+func Load() error {
 	file, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = yaml.Unmarshal(file, config)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 func GetConfig() *Config {

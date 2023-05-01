@@ -5,19 +5,32 @@ import (
 	"go-test/crypto"
 	"go-test/database"
 	"go-test/server"
+
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	var err error
+	// Set up logrus
+	// logrus.SetFormatter(&logrus.JSONFormatter{})
+	// logrus.SetOutput(os.Stdout)
 
-	config.Load()
-
-	err = database.Connect()
-	if err != nil {
-		panic(err)
+	// Load application settings
+	if err := config.Load(); err != nil {
+		logrus.WithError(err).Fatal("failed to load application settings")
 	}
 
-	crypto.LoadRsa()
+	// Connect to the database
+	if err := database.Connect(); err != nil {
+		logrus.WithError(err).Fatal("failed to connect to the database")
+	}
 
-	server.Listen()
+	// Load RSA private key
+	if err := crypto.LoadRsa(); err != nil {
+		logrus.WithError(err).Fatal("failed to load RSA private key")
+	}
+
+	// Start the server
+	if err := server.Listen(); err != nil {
+		logrus.WithError(err).Fatal("failed to start server")
+	}
 }
