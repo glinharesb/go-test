@@ -8,7 +8,7 @@ version_max: 1098
 
 # Game server
 game_ip: '127.0.0.1'
-game_port: 7175
+game_port: 7171
 server_name: 'Forgotten Server'
 
 # Pem file name

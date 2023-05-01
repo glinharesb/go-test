@@ -8,11 +8,7 @@ import (
 	"net"
 )
 
-type Server struct{}
-
-var ServerInstance Server = Server{}
-
-func (s *Server) Listen() {
+func Listen() {
 	address := fmt.Sprintf("%s:%d", config.ConfigInstance.LoginIp, config.ConfigInstance.LoginPort)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
@@ -28,12 +24,12 @@ func (s *Server) Listen() {
 			log.Fatal(err)
 		}
 
-		go s.Handle(conn)
+		go Handle(conn)
 	}
 }
 
 // handle handles incoming connections and parses packets
-func (s *Server) Handle(conn net.Conn) {
+func Handle(conn net.Conn) {
 	defer conn.Close()
 
 	fmt.Println("")

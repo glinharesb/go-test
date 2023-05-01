@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"go-test/config"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -35,15 +34,4 @@ func (d *Database) Connect() error {
 
 	d.Connection = db
 	return nil
-}
-
-func (d *Database) Version() string {
-	var version string
-
-	err := d.Connection.QueryRow("SELECT VERSION()").Scan(&version)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return version
 }

@@ -26,5 +26,5 @@ func main() {
 	defer database.DatabaseInstance.Connection.Close()
 
 	crypto.RsaInstance.Load()
-	server.ServerInstance.Listen()
+	server.Listen()
 }
