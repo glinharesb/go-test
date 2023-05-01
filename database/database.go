@@ -1,37 +1,33 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"go-test/config"
 
-	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-type Database struct {
-	Connection *sql.DB
+var db *gorm.DB
+
+func Connect() error {
+	var err error
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		config.GetConfig().DbUser,
+		config.GetConfig().DbPass,
+		config.GetConfig().DbHost,
+		config.GetConfig().DbPort,
+		config.GetConfig().DbDatabase)
+
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-var DatabaseInstance = &Database{}
-
-func (d *Database) Connect() error {
-	dataSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
-		config.ConfigInstance.DbUser,
-		config.ConfigInstance.DbPass,
-		config.ConfigInstance.DbHost,
-		config.ConfigInstance.DbPort,
-		config.ConfigInstance.DbDatabase)
-
-	db, err := sql.Open("mysql", dataSource)
-	if err != nil {
-		return err
-	}
-
-	err = db.Ping()
-	if err != nil {
-		return err
-	}
-
-	d.Connection = db
-	return nil
+func GetDb() *gorm.DB {
+	return db.Debug()
 }

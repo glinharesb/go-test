@@ -9,7 +9,7 @@ import (
 )
 
 func Listen() {
-	address := fmt.Sprintf("%s:%d", config.ConfigInstance.LoginIp, config.ConfigInstance.LoginPort)
+	address := fmt.Sprintf("%s:%d", config.GetConfig().LoginIp, config.GetConfig().LoginPort)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatal(err)

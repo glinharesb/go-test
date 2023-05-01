@@ -25,16 +25,20 @@ type Config struct {
 	EncryptionType string `yaml:"encryption_type"`
 }
 
-var ConfigInstance = &Config{}
+var config = &Config{}
 
-func (c *Config) Load() {
+func Load() {
 	file, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = yaml.Unmarshal(file, &c)
+	err = yaml.Unmarshal(file, config)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func GetConfig() *Config {
+	return config
 }

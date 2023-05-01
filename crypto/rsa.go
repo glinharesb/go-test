@@ -10,31 +10,27 @@ import (
 	"math/big"
 )
 
-type Rsa struct {
-	pemData    []byte
-	privateKey *rsa.PrivateKey
-	block      *pem.Block
+var pemData []byte
+var privateKey *rsa.PrivateKey
+var block *pem.Block
+
+func LoadRsa() {
+	loadPem()
+	extractDataBlock()
+	decodeRsa()
 }
 
-var RsaInstance *Rsa = &Rsa{}
+func loadPem() {
+	var err error
 
-func (r *Rsa) Load() {
-	r.loadPem()
-	r.extractDataBlock()
-	r.decodeRsa()
-}
-
-func (r *Rsa) loadPem() {
-	pemData, err := ioutil.ReadFile(config.ConfigInstance.PemFile)
+	pemData, err = ioutil.ReadFile(config.GetConfig().PemFile)
 	if err != nil {
 		log.Fatalf("read key file: %s", err)
 	}
-
-	RsaInstance.pemData = pemData
 }
 
-func (r *Rsa) extractDataBlock() {
-	block, _ := pem.Decode(r.pemData)
+func extractDataBlock() {
+	block, _ = pem.Decode(pemData)
 	if block == nil {
 		log.Fatalf("bad key data: %s", "not PEM-encoded")
 	}
@@ -42,26 +38,24 @@ func (r *Rsa) extractDataBlock() {
 	if got, want := block.Type, "RSA PRIVATE KEY"; got != want {
 		log.Fatalf("unknown key type %q, want %q", got, want)
 	}
-
-	RsaInstance.block = block
 }
 
-func (r *Rsa) decodeRsa() {
-	priv, err := x509.ParsePKCS1PrivateKey(r.block.Bytes)
+func decodeRsa() {
+	var err error
+
+	privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		log.Fatalf("bad private key: %s", err)
 	}
-
-	r.privateKey = priv
 }
 
-func (r *Rsa) Decrypt(encryptedBytes []byte) []byte {
+func Decrypt(encryptedBytes []byte) []byte {
 	if length := len(encryptedBytes); length != 128 {
 		log.Fatalf("invalid buffer length: %d", length)
 	}
 
 	c := new(big.Int).SetBytes(encryptedBytes)
-	plainText := c.Exp(c, r.privateKey.D, r.privateKey.N).Bytes()
+	plainText := c.Exp(c, privateKey.D, privateKey.N).Bytes()
 
 	return plainText
 }

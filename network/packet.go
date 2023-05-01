@@ -72,7 +72,7 @@ func (p *Packet) ParsePacket(packet []byte) error {
 		}
 
 		// RSA decrypt
-		decryptedMsg.Buffer = crypto.RsaInstance.Decrypt(decryptedMsg.Buffer)
+		decryptedMsg.Buffer = crypto.Decrypt(decryptedMsg.Buffer)
 
 		// XTEA keys
 		p.XteaKey[0] = decryptedMsg.GetU32()
@@ -109,7 +109,7 @@ func (p *Packet) ParsePacket(packet []byte) error {
 		}
 
 		// RSA decrypt
-		decryptAuthPacket.Buffer = crypto.RsaInstance.Decrypt(decryptAuthPacket.Buffer)
+		decryptAuthPacket.Buffer = crypto.Decrypt(decryptAuthPacket.Buffer)
 
 		accountToken = decryptAuthPacket.GetString()
 		log.Printf(">> Token: %s\n", accountToken)
@@ -140,8 +140,8 @@ func (p *Packet) ParsePacket(packet []byte) error {
 }
 
 func (p *Packet) ValidateVersion(version uint16) {
-	VERSION_MIN := uint16(config.ConfigInstance.VersionMin)
-	VERSION_MAX := uint16(config.ConfigInstance.VersionMax)
+	VERSION_MIN := uint16(config.GetConfig().VersionMin)
+	VERSION_MAX := uint16(config.GetConfig().VersionMax)
 
 	if (VERSION_MIN == VERSION_MAX) && (version != VERSION_MIN) {
 		p.DisconnectClient(fmt.Sprintf("Only clients with protocol %s allowed!",
@@ -156,12 +156,12 @@ func (p *Packet) ValidateVersion(version uint16) {
 }
 
 func loginserverAuthentication(accountName string, password string, account *database.Account) bool {
-	*account, _ = database.DatabaseInstance.LoadAccountByName(accountName)
+	*account, _ = database.GetAccountByName(accountName)
 	if len(account.Name) == 0 {
 		return false
 	}
 
-	switch config.ConfigInstance.EncryptionType {
+	switch config.GetConfig().EncryptionType {
 	case "sha1":
 		helpers.TransformToSha1(&password)
 	case "sha256":
@@ -215,12 +215,12 @@ func (p *Packet) GetCharacterList(account database.Account, token string, versio
 	}
 	outputMsg.Pos = outputMsg.Header
 
-	characters, _ := database.DatabaseInstance.LoadCharactersById(account.Id)
+	characters, _ := database.GetCharactersById(account.Id)
 
 	// motd
-	if len(config.ConfigInstance.Motd) > 0 {
+	if len(config.GetConfig().Motd) > 0 {
 		outputMsg.AddU8(0x14)
-		outputMsg.AddString(fmt.Sprintf("1\n%s", config.ConfigInstance.Motd))
+		outputMsg.AddString(fmt.Sprintf("1\n%s", config.GetConfig().Motd))
 	}
 
 	// session key
@@ -237,11 +237,11 @@ func (p *Packet) GetCharacterList(account database.Account, token string, versio
 		outputMsg.AddU8(byte(worldsLength)) // worlds quantity
 
 		for i := 0; i < worldsLength; i++ {
-			outputMsg.AddU8(byte(i))                                 // world id
-			outputMsg.AddString(config.ConfigInstance.ServerName)    // server name, online/offline status or world name
-			outputMsg.AddString(config.ConfigInstance.GameIp)        // server ip
-			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort)) // server port
-			outputMsg.AddU8(0)                                       // world preview
+			outputMsg.AddU8(byte(i))                              // world id
+			outputMsg.AddString(config.GetConfig().ServerName)    // server name, online/offline status or world name
+			outputMsg.AddString(config.GetConfig().GameIp)        // server ip
+			outputMsg.AddU16(uint16(config.GetConfig().GamePort)) // server port
+			outputMsg.AddU8(0)                                    // world preview
 		}
 
 		outputMsg.AddU8(byte(len(characters))) // characters quantity
@@ -254,10 +254,10 @@ func (p *Packet) GetCharacterList(account database.Account, token string, versio
 		outputMsg.AddU8(byte(len(characters))) // characters quantity
 
 		for _, character := range characters {
-			outputMsg.AddString(character)                                 // character name
-			outputMsg.AddString(config.ConfigInstance.ServerName)          // server name, online/offline status or world name
-			outputMsg.AddU32(helpers.Ip2int(config.ConfigInstance.GameIp)) // server ip
-			outputMsg.AddU16(uint16(config.ConfigInstance.GamePort))       // server port
+			outputMsg.AddString(character)                              // character name
+			outputMsg.AddString(config.GetConfig().ServerName)          // server name, online/offline status or world name
+			outputMsg.AddU32(helpers.Ip2int(config.GetConfig().GameIp)) // server ip
+			outputMsg.AddU16(uint16(config.GetConfig().GamePort))       // server port
 
 			if version >= 980 {
 				outputMsg.AddU8(0) // world preview
